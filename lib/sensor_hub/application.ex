@@ -23,6 +23,7 @@ defmodule SensorHub.Application do
       ] ++ children(target())
 
     Supervisor.start_link(children, opts)
+
   end
 
   # List all child processes to be supervised
@@ -41,7 +42,7 @@ defmodule SensorHub.Application do
       # {SensorHub.Worker, arg},
       #SensorHub.Display
       {Lora, []},
-      Sensorhub.Comms,
+      SensorHub.Comms,
       Sondehub.Telemetry,
       {Sondehub.Listener, [ software_name: "Elixir Gateway" ,
       software_version: "1.0.1",
@@ -50,8 +51,10 @@ defmodule SensorHub.Application do
       uploader_antenna: "Diamond 500",
       uploader_contact_email: "",
       mobile: true
-    ] }
-  ]
+      ] },
+      # start the mqtt supervisor app which fires up the totoise app
+      {MqttGateway.Connection,[clientid: "mqtt_gateway"]}
+    ]
   end
 
   def target() do

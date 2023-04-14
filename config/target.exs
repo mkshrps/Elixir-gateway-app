@@ -48,7 +48,7 @@ config :nerves_ssh,
 # Configure the network using vintage_net
 # See https://github.com/nerves-networking/vintage_net for more information
 config :vintage_net,
-  regulatory_domain: "US",
+  regulatory_domain: "GB",
   config: [
     {"usb0", %{type: VintageNetDirect}},
     {"eth0",
@@ -59,6 +59,10 @@ config :vintage_net,
     {"wlan0", %{type: VintageNetWiFi}}
   ]
 
+  config :vintage_net_wizard,
+  backend: VintageNetWizard.Backend.Mock
+
+config :wizard_example, gpio_pin: 12
 config :mdns_lite,
   # The `hosts` key specifies what hostnames mdns_lite advertises.  `:hostname`
   # advertises the device's hostname.local. For the official Nerves systems, this

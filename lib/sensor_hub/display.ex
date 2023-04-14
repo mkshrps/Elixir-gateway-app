@@ -27,12 +27,12 @@ defmodule SensorHub.Display do
 
   def draw_test() do
     # Draw something
-  SensorHub.Display.rect(0, 0, 127, 63)
-  SensorHub.Display.line(0, 0, 127, 63)
-  SensorHub.Display.line(0, 63, 127, 0)
+  rect(0, 0, 127, 63)
+  line(0, 0, 127, 63)
+  line(0, 63, 127, 0)
 
   # Display it!
-  SensorHub.Display.display()
+  display()
   end
 
   def get_font(bdf) do
@@ -61,9 +61,13 @@ defmodule SensorHub.Display do
   def test_text(font_file) do
     SensorHub.Display.clear()
     font = get_font(font_file)
-    display_draw_text(font,"Cransleigh LoRa")
+    display_draw_text(font,"Sharptek LoRa")
     display_draw_text(font,"Connected",10,20)
     SensorHub.Display.display()
+
+  end
+
+  def message_count() do
 
   end
 end

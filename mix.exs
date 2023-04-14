@@ -57,9 +57,11 @@ defmodule SensorHub.MixProject do
       {:vintage_net_wizard, "~> 0.4",targets: @all_targets},
       {:oled, "~> 0.3.6"},
       {:chisel, "~> 0.2.0"},
-      {:lora, path: "../Elixir-LoRa", targets: @all_targets},
+      {:json, "~> 1.4"},
+      {:lora_gateway, path: "../Elixir-LoRa", targets: @all_targets},
       {:sondehub, path: "../sondehub", targets: @all_targets},
-      #{:mqtt_gateway, path: "../mqtt_gateway", targets: @all_targets}
+      {:mqtt_gateway, path: "../mqtt_gateway", targets: @all_targets},
+      {:gps_decoder,path: "../gps_decoder", targets: @all_targets}
       #{:display, path: "../display", targets: @all_targets}
     ]
   end
