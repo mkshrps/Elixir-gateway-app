@@ -55,13 +55,14 @@ defmodule SensorHub.MixProject do
       {:nerves_system_x86_64, "~> 1.19", runtime: false, targets: :x86_64},
       {:nerves_system_grisp2, "~> 0.3", runtime: false, targets: :grisp2},
       {:vintage_net_wizard, "~> 0.4",targets: @all_targets},
-      {:oled, "~> 0.3.6"},
+      #{:oled, "~> 0.3.6"},
       {:chisel, "~> 0.2.0"},
       {:json, "~> 1.4"},
       {:lora_gateway, path: "../Elixir-LoRa", targets: @all_targets},
       {:sondehub, path: "../sondehub", targets: @all_targets},
       {:mqtt_gateway, path: "../mqtt_gateway", targets: @all_targets},
-      {:gps_decoder,path: "../gps_decoder", targets: @all_targets}
+      {:gps_decoder,path: "../gps_decoder", targets: @all_targets},
+      {:lcd_display,path: "../lcd_display"}
       #{:display, path: "../display", targets: @all_targets}
     ]
   end

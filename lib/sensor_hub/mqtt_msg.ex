@@ -23,11 +23,12 @@ defmodule SensorHub.MqttMsg do
   ]
 
 
-  #@lora_msg "$$FLOPPY445,413,00:00:00,0.000000,0.000000,0,0,0,0,18,0.00, 0.00,0.00,3408,0,3,0*A2BC"
+  @lora_msg "$$FLOPPY445,000,00:00:00,0.000000,0.000000,0,0,0,0,18,0.00, 0.00,0.00,3408,0,3,0*A2BC"
 
+  def lora_msg(), do: @lora_msg
 
   def send_telemetry_to_mqtt(telem) do
-    Logger.info(telem)
+    #Logger.info(telem)
     Mqtt.update_payload(telem)
 
   end
@@ -46,6 +47,14 @@ defmodule SensorHub.MqttMsg do
     {:ok,json_content} = JSON.encode(body)
     # wrap in [] for telemetry
     "[#{json_content}]"
+  end
+
+  def parse_display_msg(%{:payload => payload,:snr => snr,:rssi => rssi, :frq => frq } = _message_data) do
+    payload
+    |> lora_msg_to_list()
+    |> get_standard_fields()  # just take standard fields out of payload
+    |> add_keywords_to_list(@mqtt_fields)
+    |> parse_device_details(snr,rssi,frq)
   end
 
   def parse_msg(%{:payload => payload,:snr => snr,:rssi => rssi, :frq => frq } = _message_data) do
@@ -83,6 +92,13 @@ defmodule SensorHub.MqttMsg do
     String.to_integer(id)
 
   end
+
+  def parse_device_details(lora_list,snr,rssi,frq) do
+    lst = [snr: "#{snr}", rssi: "#{rssi}", frequency: "#{frq}" ]
+    lora_list ++ lst
+  end
+
+
 
   def add_device_details(lora_list,snr,rssi,frq,[]) do
     lst = [snr: snr, rssi: rssi, frequency: frq ]
