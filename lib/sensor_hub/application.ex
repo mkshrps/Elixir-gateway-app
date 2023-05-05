@@ -44,16 +44,18 @@ defmodule SensorHub.Application do
       {Lora, []},
       SensorHub.Comms,
       Sondehub.Telemetry,
-      {Sondehub.Listener, [ software_name: "Elixir Gateway" ,
+      {Sondehub.Listener, [
+      software_name: "Elixir Gateway" ,
       software_version: "1.0.1",
-      uploader_callsign: "weirdie_gateway",
-      uploader_position: [53.230841,-2.527784,14],
-      uploader_antenna: "Diamond 500",
+      uploader_callsign: "CranlyBase",
+      uploader_position: [53.3012,-2.520200,50],
+      uploader_antenna: "Diamond X500",
       uploader_contact_email: "",
-      mobile: true
+      mobile: false
       ] },
       # start the mqtt supervisor app which fires up the totoise app
-      {MqttGateway.Connection,[clientid: "mqtt_gateway"]}
+      {MqttGateway.Connection,[clientid: "mqtt_gateway"]},
+      SensorHub.RpiButtons
     ]
   end
 

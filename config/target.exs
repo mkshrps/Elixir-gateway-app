@@ -59,8 +59,8 @@ config :vintage_net,
     {"wlan0", %{type: VintageNetWiFi}}
   ]
 
-  config :vintage_net_wizard,
-  backend: VintageNetWizard.Backend.Mock
+  #config :vintage_net_wizard
+  #backend: VintageNetWizard.Backend.Mock
 
 config :wizard_example, gpio_pin: 12
 config :mdns_lite,
@@ -72,7 +72,7 @@ config :mdns_lite,
   # because otherwise any of the devices may respond to nerves.local leading to
   # unpredictable behavior.
 
-  hosts: [:hostname, "lorahub"],
+  hosts: [:hostname, "habdev"],
   ttl: 120,
 
   # Advertise the following services over mDNS.

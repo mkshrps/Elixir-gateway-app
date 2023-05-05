@@ -1,4 +1,4 @@
-  defmodule DispPage do
+  defmodule SensorHub.DispPage do
 
     def display_page(page_id,payload,pid) do
       page_list = SensorHub.MqttMsg.parse_display_msg(payload)
@@ -13,7 +13,7 @@
         row: 0,
         col: 0,
         name: "Lon",
-        value: page_list[:lon],
+        value: String.slice(page_list[:lon],0,6),
         opts: [display_name: false, write: false]
       ]
 
@@ -21,7 +21,8 @@
         row: 1,
         col: 0,
         name: "Lat",
-        value: page_list[:lat],
+        #value: page_list[:lat],
+        value: String.slice(page_list[:lat],0,6),
         opts: [display_name: false, write: false]
       ]
 
@@ -52,7 +53,7 @@
         row: 3,
         col: 0,
         name: "frq",
-        value: page_list[:frequency],
+        value: String.slice(page_list[:frequency],0,6),
         opts: [display_name: false, write: false]
       ]
 
@@ -81,6 +82,13 @@
           LcdDisplay.execute(pid, {:print, item[:text]})
         end )
     end
+
+    def trim(s) do
+      String.slice(s,0,6)
+    end
+
+
+
 
 
 

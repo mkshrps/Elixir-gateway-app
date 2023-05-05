@@ -1,4 +1,4 @@
-defmodule RpiButtons do
+defmodule SensorHub.RpiButtons do
   use GenServer
   require Logger
 
@@ -7,6 +7,7 @@ defmodule RpiButtons do
   @button3_default 12
 
   alias Circuits.GPIO
+  alias SensorHub.Comms
 
   def start_link(_) do
     GenServer.start_link(__MODULE__, [], name: __MODULE__)
@@ -19,32 +20,48 @@ defmodule RpiButtons do
     GPIO.set_interrupts(gpio1, :rising)
     GPIO.set_interrupts(gpio2, :rising)
     GPIO.set_interrupts(gpio3, :both)
-    {:ok, %{gpio1: gpio1, gpio2: gpio2, gpio3: gpio3}}
+    {:ok, %{gpio1: gpio1, gpio2: gpio2, gpio3: gpio3,timestamp: 0,page: 1}}
   end
 
-  def handle_info({:circuits_gpio, @button1_default, _timestamp, _value}, state) do
+  def handle_info({:circuits_gpio, @button1_default, _timestamp, 0}, state) do
     Logger.info("Button 1 pressed")
-    Logger.info(state)
     {:noreply, state}
   end
 
-  def handle_info({:circuits_gpio, @button2_default, _timestamp, _value}, state) do
+  def handle_info({:circuits_gpio, @button1_default, _timestamp, 1}, state) do
+    Logger.info("Button 1 released")
+    Comms.set_page(:page_up)
+    {:noreply, state}
+  end
+
+   def handle_info({:circuits_gpio, @button2_default, _timestamp, 0}, state) do
     Logger.info("Button 2 pressed")
     {:noreply, state}
   end
+
+  def handle_info({:circuits_gpio, @button2_default, _timestamp, 1}, state) do
+    Logger.info("Button 2 released")
+    Comms.set_page(:page_down)
+    {:noreply, state}
+  end
+
   # vintage net wizard interrupt
-  def handle_info({:circuits_gpio, @button3_default, _timestamp, 1},state) do
+  def handle_info({:circuits_gpio, @button3_default, timestamp, 0},state) do
     Logger.info("Button 3 pressed")
+    Map.put(state,:timestamp,timestamp)
     {:noreply, state,5000}
   end
 
 # Button released. The GenServer timer is implicitly cancelled by receiving this message.
-  def handle_info({:circuits_gpio, @button3_default, _timestamp, 0},state) do
+  def handle_info({:circuits_gpio, @button3_default, timestamp, 1},state) do
     Logger.info("Button 3 released")
-    {:noreply, state}
+    timer =   timestamp - state.timestamp
+    Logger.info("Timer: #{timer}")
+    {:noreply, Map.put(state,:timestamp,timestamp)}
   end
 
   def handle_info(:timeout, state) do
+    Logger.info("vintagenet wizard started")
     :ok = VintageNetWizard.run_wizard(device_info: get_device_info())
     {:noreply, state}
   end

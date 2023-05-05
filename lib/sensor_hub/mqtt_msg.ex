@@ -2,7 +2,7 @@ defmodule SensorHub.MqttMsg do
   require Logger
   alias MqttGateway.Mqtt
 
-  @mqtt_fields [
+  @payload_fields [
     :call_sign,
     :frame,
     :datetime,
@@ -22,15 +22,10 @@ defmodule SensorHub.MqttMsg do
     :devices_running
   ]
 
-
-  @lora_msg "$$FLOPPY445,000,00:00:00,0.000000,0.000000,0,0,0,0,18,0.00, 0.00,0.00,3408,0,3,0*A2BC"
-
-  def lora_msg(), do: @lora_msg
-
   def send_telemetry_to_mqtt(telem) do
     #Logger.info(telem)
+    # call Mqtt upadte API
     Mqtt.update_payload(telem)
-
   end
 
   def upload_telemetry(payload_data) do
@@ -38,8 +33,6 @@ defmodule SensorHub.MqttMsg do
     |> parse_msg()
     |> convert_to_json()
     |> send_telemetry_to_mqtt()
-
-   # return the response HTTPoison.response struct
   end
 
   def convert_to_json(body) do
@@ -49,25 +42,28 @@ defmodule SensorHub.MqttMsg do
     "[#{json_content}]"
   end
 
+  # parse payload to a keyword list defined by @payload_fields but format all fields as strings
+  # for displaying in LCD display
   def parse_display_msg(%{:payload => payload,:snr => snr,:rssi => rssi, :frq => frq } = _message_data) do
     payload
     |> lora_msg_to_list()
     |> get_standard_fields()  # just take standard fields out of payload
-    |> add_keywords_to_list(@mqtt_fields)
-    |> parse_device_details(snr,rssi,frq)
+    |> add_keywords_to_list(@payload_fields)
+    |> parse_to_strings(snr,rssi,frq)
   end
 
+  # format as keyword list format certain fields as numeric this is the same as required for sondehub
+  # we send the same format to Mqtt
   def parse_msg(%{:payload => payload,:snr => snr,:rssi => rssi, :frq => frq } = _message_data) do
-    payload
+    payload                   # raw loara message from tracker in UKhas format
     |> lora_msg_to_list()
     |> get_standard_fields()  # just take standard fields out of payload
-    |> add_keywords_to_list(@mqtt_fields)
+    |> add_keywords_to_list(@payload_fields)
     |> add_device_details(snr,rssi,frq)
     |> parse_to_int(:frame)
     |> parse_to_float(:lon)
     |> parse_to_float(:lat)
     |> parse_to_int(:alt)
-
   end
 
   # convert incoming telem message to lis and adds additional prams
@@ -77,7 +73,8 @@ defmodule SensorHub.MqttMsg do
  end
 
 
-  # no custom fields to process so just get the standard fields
+  # get all the fields in the message
+  # this will change when handling unknown payloads
   def get_standard_fields(fields_list) do
     fields_list
   end
@@ -92,8 +89,8 @@ defmodule SensorHub.MqttMsg do
     String.to_integer(id)
 
   end
-
-  def parse_device_details(lora_list,snr,rssi,frq) do
+  # convert all fields to trings for display
+  def parse_to_strings(lora_list,snr,rssi,frq) do
     lst = [snr: "#{snr}", rssi: "#{rssi}", frequency: "#{frq}" ]
     lora_list ++ lst
   end
