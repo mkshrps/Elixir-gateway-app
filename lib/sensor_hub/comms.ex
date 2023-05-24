@@ -5,13 +5,21 @@ Sondehub
 MQTT
 Display
 
+Ukhas mode sets the following lora parameters
+  :bw lora bandwidth setting
+  :sf lora spreading factor (6-12)
+  :error_coding
+  :payload_length \\ 255 only applies to sf6 (ukhas mode 1)
+  :ukhas_mode 0,1,2
 """
   alias SensorHub.DispPage
+  alias SensorHub.UkhasModes
 
+  #@default_lora_frq 434.450E6
   @default_lora_frq 434.450E6
   @default_ukhas_mode 1
   @max_pages  2
-  @lcd_fitted false
+  @lcd_fitted true
 
   use GenServer
   require Logger
@@ -21,11 +29,20 @@ Display
     GenServer.start_link(__MODULE__,config,name: @server_name)
   end
 
-  def init([]) do
+  # comms config [:frequency , :ukhas_mode]
+  def init(config \\ []) do
     # preset lora payload data with initialisation string
     payload = %{status: :ok, payload: lora_msg(), snr: "0.0", rssi: "0", frq: "-----", crc_error: false}
     #payload = %Lora{} // initialise payload data with lora struct
-    lora_settings = %{set_frq: @default_lora_frq, ukhas_mode: @default_ukhas_mode,auto_tune: true}
+
+    # start the lora device receiving
+    lora_frequency = Keyword.get(config, :frequency, @default_lora_frq )  #default 434.450 Mhz
+    lora_mode = Keyword.get(config,:ukhas_mode , @default_ukhas_mode)
+
+    # start the lora device receiving
+    Lora.begin(lora_frequency,UkhasModes.ukhas_mode(lora_mode))
+
+    lora_settings = %{set_frq: lora_frequency, ukhas_mode: lora_mode, auto_tune: true}
     crc_count = 0;
     # only start the display update if configured
     lcd_pid = if @lcd_fitted do
@@ -50,6 +67,7 @@ Display
   # lora sends this data when received
   def handle_cast({:process_payload,payload_data}, state) do
     # send the payload to sondehub and mqtt
+    #val = 123/0
     state = lora_payload(payload_data,state)
     # save the payload
     {:noreply,state}
@@ -67,8 +85,18 @@ Display
     {:noreply, state}
   end
 
+  def handle_cast({:set_lora_mode,mode},state) do
+    modem_config = SensorHub.UkhasModes.ukhas_mode(mode)
+    state = if(mode >= 0 && mode <=2) do
+      Lora.set_modem_params(modem_config)
+      put_in(state.config,:modem_config,modem_config)
+    end
+    {:noreply,state}
+  end
 
 
+
+  def set_lora_mode(mode), do: GenServer.cast(@server_name,{:set_lora_mode,mode})
 
   def handle_info(:display_update, state) do
     DispPage.display_page(1,state.lora[:payload],state.display.lcd_pid)

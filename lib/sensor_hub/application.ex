@@ -41,7 +41,7 @@ defmodule SensorHub.Application do
       # Starts a worker by calling: SensorHub.Worker.start_link(arg)
       # {SensorHub.Worker, arg},
       #SensorHub.Display
-      {Lora, []},
+      Lora,
       SensorHub.Comms,
       Sondehub.Telemetry,
       {Sondehub.Listener, [
